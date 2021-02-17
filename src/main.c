@@ -85,12 +85,12 @@ void print_matrix(short** matrix, int rows, int columns) {
 }
 
 void edit_grid(short** grid, int rows, int columns) {
-	int x = 0, y = 0;
+	int x = columns / 2, y = rows / 2;
 	
 	// Add blinking cursor
 	curs_set(1);
 	print_matrix(grid, rows, columns);
-	move(0, 0);
+	move(y, x);
 	
 	int input = getch();
 
