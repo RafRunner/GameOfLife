@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<ncurses.h>
 
+#define MY_KEY_ENTER 10
 
 short** allocate_matrix(int rows, int columns) {
 	short** out = calloc(rows, sizeof(short**));
@@ -21,19 +22,6 @@ void free_matrix(short** matrix, int rows) {
 
 	free(matrix);
 	matrix = NULL;
-}
-
-void print_matrix(short** matrix, int rows, int columns) {
-	for (int i = 0; i < rows; i++) {
-		for (int j = 0; j < columns; j++) {
-			if (matrix[i][j]) {
-				printw("X");
-			}
-			else {
-				printw(" ");
-			}
-		}
-	}
 }
 
 int find_live_neighbors(short** grid, int row, int column, int rows, int columns) {
@@ -81,17 +69,88 @@ short** game_of_life(short** grid, int rows, int columns) {
 	return next_iteration;
 }
 
-void execute_game(short** start_grid, int rows, int columns) {
-	short** grid = start_grid;
-	
-	print_matrix(grid, rows, columns);
+void print_matrix(short** matrix, int rows, int columns) {
 	move(0, 0);
 
-	while(1) {
-		short** next_iteration = game_of_life(grid, rows, columns);
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < columns; j++) {
+			if (matrix[i][j]) {
+				printw("X");
+			}
+			else {
+				printw(" ");
+			}
+		}
+	}
+}
+
+void edit_grid(short** grid, int rows, int columns) {
+	int x = 0, y = 0;
 	
+	// Add blinking cursor
+	curs_set(1);
+	print_matrix(grid, rows, columns);
+	move(0, 0);
+	
+	int input = getch();
+
+	while (input != KEY_ENTER && input != MY_KEY_ENTER) {
+		switch (input) {
+			case KEY_DOWN:
+				if (y < rows - 1) y++;
+				break;
+			case KEY_UP:
+				if (y > 0) y--;
+				break;
+			case KEY_RIGHT:
+				if (x < columns - 1) x++;
+				break;
+			case KEY_LEFT:
+				if (x > 0) x--;
+				break;
+
+			// C or c for clearing the screen
+			case 67:
+			case 99:
+				for (int i = 0; i < rows; i++) {
+					for (int j = 0; j < columns; j++) {
+						grid[i][j] = 0;
+					}
+				}
+				print_matrix(grid, rows, columns);
+				move(y, x);
+				break;
+
+			// Q or q to quit
+			case 81:
+			case 113:
+				endwin();
+				exit(0);
+			
+			case KEY_BACKSPACE:
+				printw(" ");
+				grid[y][x] = 0;
+				break;
+			default:
+				grid[y][x] = 1;
+				printw("X");
+		}
+		
+		move(y, x);
+		input = getch();
+	}
+
+	// Remove blinking cursor
+	curs_set(0);
+}
+
+void execute_game(short** grid, int rows, int columns) {
+	print_matrix(grid, rows, columns);
+
+	while (1) {
+		short** next_iteration = game_of_life(grid, rows, columns);
+
 		print_matrix(next_iteration, rows, columns);
-		move(0, 0);
 
 		free_matrix(grid, rows);
 		grid = next_iteration;
@@ -99,6 +158,10 @@ void execute_game(short** start_grid, int rows, int columns) {
 		char input = getch();
 		if (input == 'q' || input == 'Q') {
 			break;
+		}
+
+		if (input == 'e' || input == 'E') {
+			edit_grid(grid, rows, columns);
 		}
 	}
 }
@@ -108,19 +171,14 @@ int main() {
 	int columns;
 	
 	initscr();
-	raw();
+	cbreak();
 	keypad(stdscr, TRUE);
 	getmaxyx(stdscr, rows, columns);
 	noecho();
-	curs_set(0);
 
 	short** start_grid = allocate_matrix(rows, columns);
 
-	start_grid[0][1] = 1;
-	start_grid[1][2] = 1;
-	start_grid[2][0] = 1;
-	start_grid[2][1] = 1;
-	start_grid[2][2] = 1;
+	edit_grid(start_grid, rows, columns);
 
 	execute_game(start_grid, rows, columns);
 
