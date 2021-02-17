@@ -27,13 +27,12 @@ void print_matrix(short** matrix, int rows, int columns) {
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < columns; j++) {
 			if (matrix[i][j]) {
-				printw("X ");
+				printw("X");
 			}
 			else {
-				printw("_ ");
+				printw(" ");
 			}
 		}
-		printw("\n");
 	}
 }
 
@@ -88,7 +87,7 @@ void execute_game(short** start_grid, int rows, int columns) {
 	print_matrix(grid, rows, columns);
 	move(0, 0);
 
-	for (int i = 0; i < 100; i++) {
+	while(1) {
 		short** next_iteration = game_of_life(grid, rows, columns);
 	
 		print_matrix(next_iteration, rows, columns);
@@ -97,7 +96,10 @@ void execute_game(short** start_grid, int rows, int columns) {
 		free_matrix(grid, rows);
 		grid = next_iteration;
 
-		getch();
+		char input = getch();
+		if (input == 'q' || input == 'Q') {
+			break;
+		}
 	}
 }
 
@@ -108,7 +110,7 @@ int main() {
 	initscr();
 	raw();
 	keypad(stdscr, TRUE);
-	getmaxyx(stdscr, columns, rows);
+	getmaxyx(stdscr, rows, columns);
 	noecho();
 	curs_set(0);
 
