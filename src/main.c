@@ -75,10 +75,10 @@ void print_matrix(short** matrix, int rows, int columns) {
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < columns; j++) {
 			if (matrix[i][j]) {
-				printw("X");
+				addch('X');
 			}
 			else {
-				printw(" ");
+				addch(' ');
 			}
 		}
 	}
@@ -128,12 +128,12 @@ void edit_grid(short** grid, int rows, int columns) {
 				exit(0);
 			
 			case KEY_BACKSPACE:
-				printw(" ");
+				addch(' ');
 				grid[y][x] = 0;
 				break;
 			default:
 				grid[y][x] = 1;
-				printw("X");
+				addch('X');
 		}
 		
 		move(y, x);
